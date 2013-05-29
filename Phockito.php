@@ -506,6 +506,9 @@ interface Phockito_MockMarker {
 /**
  * A builder than is returned by Phockito::when to capture the methods that specify the stubbed responses
  * for a particular mocked method / arguments set
+ *
+ * @method Phockito_WhenBuilder thenReturn() thenReturn( mixed $returnValue )
+ * @method Phockito_WhenBuilder thenThrow() thenThrow( Exception $exception )
  */
 class Phockito_WhenBuilder {
 
