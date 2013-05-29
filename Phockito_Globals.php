@@ -16,7 +16,7 @@ function spy() {
 /**
  * @return Phockito_WhenBuilder
  */
-function when() {
+function when( $arg = null ) {
 	$args = func_get_args();
 	return call_user_func_array(array('Phockito', 'when'), $args);
 }
