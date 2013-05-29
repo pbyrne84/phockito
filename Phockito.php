@@ -116,6 +116,10 @@ class Phockito {
 			}
 			// Otherwise check for equality by checking the equality of the serialized version
 			else {
+                if( !Phockito_NonSerializableComparator::verifySerializationIsPossible( $u, $v ) ){
+                    return Phockito_NonSerializableComparator::compareNonSerializable( $u, $v );
+                }
+
 				if (serialize($u) != serialize($v)) return false;
 			}
 		}
@@ -629,3 +633,64 @@ class Phockito_VerifyBuilder {
 	}
 }
 
+
+Class Phockito_NonSerializableComparator {
+    private static $nativeNonSerializableClasses = array(
+        'DomDocument', 'SplFileInfo'
+    );
+
+
+    public static function verifySerializationIsPossible(  $expected, $actual  ){
+        return self::isComparableBySerialization( $expected ) && self::isComparableBySerialization( $actual );
+    }
+
+    private static function isComparableBySerialization( $value ) {
+        if ( !is_object( $value ) ) {
+            return true;
+        }
+
+        foreach ( self::$nativeNonSerializableClasses as $nativeNonSerializableClass ) {
+            if ( $value instanceof $nativeNonSerializableClass ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    public static function compareNonSerializable( $expectedObject, $actualObject ) {
+        if( $expectedObject === $actualObject ){
+            return true;
+        }
+
+        $comparableExpected = $expectedObject;
+        if ( !is_null( $expectedObject ) ) {
+            $comparableExpected = self::castNonSerializableClassToString( $expectedObject );
+        }
+
+        $comparableActual = $actualObject;
+        if ( !is_null( $actualObject ) ) {
+            $comparableActual = self::castNonSerializableClassToString( $actualObject );
+        }
+
+        return $comparableExpected == $comparableActual;
+    }
+
+
+    private static function castNonSerializableClassToString( $nonSerializableClass ) {
+        if( isset( $nonSerializableClass->__phockito_instanceid )){
+            return 'phockito_instanceid:' . $nonSerializableClass->__phockito_instanceid;
+        }
+
+        if ( $nonSerializableClass instanceof DOMDocument ) {
+            return get_class( $nonSerializableClass ) . ':' . $nonSerializableClass->saveXML();
+        } elseif ( $nonSerializableClass instanceof SplFileInfo ) {
+            return get_class( $nonSerializableClass ) . ':' . $nonSerializableClass->getPathname();
+        }
+
+        throw new BadMethodCallException(
+            get_class( $nonSerializableClass ) . ' has not been configured as as non serializable'
+        );
+    }
+}
