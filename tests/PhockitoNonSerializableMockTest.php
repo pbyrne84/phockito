@@ -78,8 +78,54 @@ class PhockitoNonSerializableMockTest extends PHPUnit_Framework_TestCase {
         verify( $this->phockitoMockParameterCall, 0 )->execute( $splFileInfo1 );
         verify( $this->phockitoMockParameterCall, 1 )->execute( $splFileInfo2 );
     }
-}
 
+
+    public function test_mixedNonSerializableAndSerializable() {
+        $splFileInfo1 = mock( 'SplFileInfo' );
+        $stdClass1    = mock( 'StdClass' );
+
+        $this->phockitoNonSerializableMockTestHarness->passBothParameters( $splFileInfo1, $stdClass1 );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $splFileInfo1 );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $stdClass1 );
+    }
+
+
+    public function test_invalidMixedTypeThrowsUsual_PHPUnitFrameworkAssertionFailedError() {
+        $splFileInfo1 = mock( 'SplFileInfo' );
+        $splFileInfo2 = mock( 'SplFileInfo' );
+        $stdClass1    = mock( 'StdClass' );
+
+        $this->phockitoNonSerializableMockTestHarness->passBothParameters( $splFileInfo1, $splFileInfo2 );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $splFileInfo1 );
+
+        $this->setExpectedException( 'PHPUnit_Framework_AssertionFailedError' );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $stdClass1 );
+    }
+
+
+    public function test_invalidNullExpectedOnlyThrowsUsual_PHPUnitFrameworkAssertionFailedError() {
+        $splFileInfo1 = mock( 'SplFileInfo' );
+        $splFileInfo2 = mock( 'SplFileInfo' );
+
+        $this->phockitoNonSerializableMockTestHarness->passBothParameters( $splFileInfo1, $splFileInfo2 );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $splFileInfo1 );
+
+        $this->setExpectedException( 'PHPUnit_Framework_AssertionFailedError' );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( null );
+    }
+
+
+    public function test_invalidObjectExpectedOnlyThrowsUsual_PHPUnitFrameworkAssertionFailedError() {
+        $splFileInfo1 = mock( 'SplFileInfo' );
+        $splFileInfo2 = mock( 'SplFileInfo' );
+
+        $this->phockitoNonSerializableMockTestHarness->passBothParameters( $splFileInfo1, null );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $splFileInfo1 );
+
+        $this->setExpectedException( 'PHPUnit_Framework_AssertionFailedError' );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $splFileInfo2 );
+    }
+}
 
 
 class PhockitoNonSerializableMockTestHarness {
@@ -96,6 +142,12 @@ class PhockitoNonSerializableMockTestHarness {
 
     public function passSecondObjectOnly(  $object1,  $object2 ) {
         return $this->phockitoMockParameterCall->execute( $object2 );
+    }
+
+
+    public function passBothParameters(  $object1,  $object2 ) {
+          $this->phockitoMockParameterCall->execute( $object1 );
+          $this->phockitoMockParameterCall->execute( $object2 );
     }
 }
 

@@ -116,7 +116,7 @@ class Phockito {
 			}
 			// Otherwise check for equality by checking the equality of the serialized version
 			else {
-                if( !Phockito_NonSerializableComparator::verifySerializationIsPossible( $u, $v ) ){
+                if( !Phockito_NonSerializableComparator::verifySerializationOnBothIsPossible( $u, $v ) ){
                     return Phockito_NonSerializableComparator::compareNonSerializable( $u, $v );
                 }
 
@@ -640,7 +640,13 @@ Class Phockito_NonSerializableComparator {
     );
 
 
-    public static function verifySerializationIsPossible(  $expected, $actual  ){
+    /**
+     * @param mixed $expected
+     * @param mixed $actual
+     *
+     * @return boolean
+     */
+    public static function verifySerializationOnBothIsPossible( $expected, $actual ) {
         return self::isComparableBySerialization( $expected ) && self::isComparableBySerialization( $actual );
     }
 
@@ -659,18 +665,24 @@ Class Phockito_NonSerializableComparator {
     }
 
 
+    /**
+     * @param object $expectedObject
+     * @param object $actualObject
+     *
+     * @return boolean
+     */
     public static function compareNonSerializable( $expectedObject, $actualObject ) {
         if( $expectedObject === $actualObject ){
             return true;
         }
 
         $comparableExpected = $expectedObject;
-        if ( !is_null( $expectedObject ) ) {
+        if ( is_object( $expectedObject ) ) {
             $comparableExpected = self::castNonSerializableClassToString( $expectedObject );
         }
 
         $comparableActual = $actualObject;
-        if ( !is_null( $actualObject ) ) {
+        if ( is_object( $actualObject ) ) {
             $comparableActual = self::castNonSerializableClassToString( $actualObject );
         }
 
@@ -678,6 +690,12 @@ Class Phockito_NonSerializableComparator {
     }
 
 
+    /**
+     * @param object $nonSerializableClass
+     *
+     * @return string
+     * @throws InvalidArgumentException
+     */
     private static function castNonSerializableClassToString( $nonSerializableClass ) {
         if( isset( $nonSerializableClass->__phockito_instanceid )){
             return 'phockito_instanceid:' . $nonSerializableClass->__phockito_instanceid;
@@ -689,7 +707,7 @@ Class Phockito_NonSerializableComparator {
             return get_class( $nonSerializableClass ) . ':' . $nonSerializableClass->getPathname();
         }
 
-        throw new BadMethodCallException(
+        throw new InvalidArgumentException(
             get_class( $nonSerializableClass ) . ' has not been configured as as non serializable'
         );
     }
