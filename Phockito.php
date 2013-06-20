@@ -519,6 +519,8 @@ interface Phockito_MockMarker {
  * @method Phockito_WhenBuilder throw($exception) thenThrow($exception)
  * @method Phockito_WhenBuilder callback($callback) thenCallback($callback)
  * @method Phockito_WhenBuilder then($arg)
+ * @method Phockito_WhenBuilder thenReturn() thenReturn( mixed $returnValue )
+ * @method Phockito_WhenBuilder thenThrow() thenThrow( Exception $exception )
  */
 class Phockito_WhenBuilder {
 
