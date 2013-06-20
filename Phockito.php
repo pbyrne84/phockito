@@ -155,7 +155,11 @@ class Phockito {
 
 	public static function __perform_response($response, $args) {
 		if ($response['action'] == 'return') return $response['value'];
-		else if ($response['action'] == 'throw') { $class = $response['value']; throw (is_object($class) ? $class : new $class()); }
+		else if ($response['action'] == 'throw') {
+			/** @var Exception $class */
+			$class = $response['value'];
+			throw (is_object($class) ? $class : new $class());
+		}
 		else if ($response['action'] == 'callback') return call_user_func_array($response['value'], $args);
 		else user_error("Got unknown action {$response['action']} - how did that happen?", E_USER_ERROR);
 	}
@@ -511,8 +515,10 @@ interface Phockito_MockMarker {
  * A builder than is returned by Phockito::when to capture the methods that specify the stubbed responses
  * for a particular mocked method / arguments set
  *
- * @method Phockito_WhenBuilder thenReturn() thenReturn( mixed $returnValue )
- * @method Phockito_WhenBuilder thenThrow() thenThrow( Exception $exception )
+ * @method Phockito_WhenBuilder return($value) thenReturn($value)
+ * @method Phockito_WhenBuilder throw($exception) thenThrow($exception)
+ * @method Phockito_WhenBuilder callback($callback) thenCallback($callback)
+ * @method Phockito_WhenBuilder then($arg)
  */
 class Phockito_WhenBuilder {
 
@@ -555,13 +561,26 @@ class Phockito_WhenBuilder {
 			$this->__phockito_setMethod($called, $args);
 		}
 		else {
+			if (count($args) !== 1) user_error("$called requires exactly one argument", E_USER_ERROR);
 			$value = $args[0]; $action = null;
 
 			if (preg_match('/return/i', $called)) $action = 'return';
 			else if (preg_match('/throw/i', $called)) $action = 'throw';
 			else if (preg_match('/callback/i', $called)) $action = 'callback';
-			else if ($called == 'then' && $this->lastAction) $action = $this->lastAction;
-			else user_error("Unknown when action $called - should contain return or throw somewhere in method name", E_USER_ERROR);
+			else if ($called == 'then') {
+				if ($this->lastAction) {
+					$action = $this->lastAction;
+				} else {
+					user_error(
+						"Cannot use then without previously invoking a \"return\", \"throw\", or \"callback\" action",
+						E_USER_ERROR
+					);
+				}
+			}
+			else user_error(
+				"Unknown when action $called - should contain \"return\", \"throw\" or \"callback\" somewhere in method name",
+				E_USER_ERROR
+			);
 
 			Phockito::$_responses[$this->instance][$this->method][$this->i]['steps'][] = array(
 				'action' => $action,
