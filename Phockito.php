@@ -639,13 +639,13 @@ class Phockito_VerifyBuilder {
 
 		$message  = "Failed asserting that method $called was called {$this->times} times - actually called $count times.\n";
 		$message .= "Wanted call:\n";
-		$message .= print_r($args, true);
+		$message .= var_export($args, true);
 		
 		$message .= "Calls:\n";
 
 		foreach (Phockito::$_call_list as $call) {
 			if ($call['instance'] == $this->instance && $call['method'] == $called) {
-				$message .= print_r($call['args'], true);
+				$message .= var_export($call['args'], true);
 			}
 		}
 
