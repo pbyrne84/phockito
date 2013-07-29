@@ -20,6 +20,9 @@ function when() {
 	return call_user_func_array(array('Phockito', 'when'), $args);
 }
 
+/**
+ * @return Phockito_VerifyBuilder
+ */
 function verify() {
 	$args = func_get_args();
 	return call_user_func_array(array('Phockito', 'verify'), $args);
