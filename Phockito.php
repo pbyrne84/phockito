@@ -689,6 +689,7 @@ Class Phockito_NonSerializableComparator {
         return self::isComparableBySerialization( $expected ) && self::isComparableBySerialization( $actual );
     }
 
+
     private static function isComparableBySerialization( $value ) {
         if ( !is_object( $value ) ) {
             return true;
@@ -700,7 +701,19 @@ Class Phockito_NonSerializableComparator {
             }
         }
 
-        return true;
+        return !self::hasCustomSerializeAction( $value );
+    }
+
+
+    private static function hasCustomSerializeAction( $value ){
+        $methods = get_class_methods( $value );
+        foreach( $methods as $method ){
+            if( $method == '__sleep' ){
+                return true;
+            }
+        }
+
+        return false;
     }
 
 

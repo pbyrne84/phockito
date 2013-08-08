@@ -1,6 +1,6 @@
 <?php
-require_once(dirname(dirname(__FILE__)) . '/Phockito.php');
-require_once(dirname(dirname(__FILE__)) . '/Phockito_Globals.php');
+require_once( dirname( dirname( __FILE__ ) ) . '/Phockito.php' );
+require_once( dirname( dirname( __FILE__ ) ) . '/Phockito_Globals.php' );
 
 class PhockitoNonSerializableMockTest extends PHPUnit_Framework_TestCase {
     const CLASS_NAME = __CLASS__;
@@ -125,8 +125,21 @@ class PhockitoNonSerializableMockTest extends PHPUnit_Framework_TestCase {
         $this->setExpectedException( 'PHPUnit_Framework_AssertionFailedError' );
         verify( $this->phockitoMockParameterCall, 1 )->execute( $splFileInfo2 );
     }
-}
 
+
+    public function test_mockingWithCustomSleep_shouldNotFatal() {
+        $phockitoClassWithCustomSerializeAction1 = mock( 'PhockitoClassWithCustomSerializeAction' );
+        $phockitoClassWithCustomSerializeAction2 = mock( 'PhockitoClassWithCustomSerializeAction' );
+
+        $this->phockitoNonSerializableMockTestHarness->passBothParameters( $phockitoClassWithCustomSerializeAction1, null );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $phockitoClassWithCustomSerializeAction1 );
+
+        $this->setExpectedException( 'PHPUnit_Framework_AssertionFailedError' );
+        verify( $this->phockitoMockParameterCall, 1 )->execute( $phockitoClassWithCustomSerializeAction2 );
+    }
+
+
+}
 
 class PhockitoNonSerializableMockTestHarness {
     const CLASS_NAME = __CLASS__;
@@ -140,30 +153,38 @@ class PhockitoNonSerializableMockTestHarness {
     }
 
 
-    public function passSecondObjectOnly(  $object1,  $object2 ) {
+    public function passSecondObjectOnly( $object1, $object2 ) {
         return $this->phockitoMockParameterCall->execute( $object2 );
     }
 
 
-    public function passBothParameters(  $object1,  $object2 ) {
-          $this->phockitoMockParameterCall->execute( $object1 );
-          $this->phockitoMockParameterCall->execute( $object2 );
+    public function passBothParameters( $object1, $object2 ) {
+        $this->phockitoMockParameterCall->execute( $object1 );
+        $this->phockitoMockParameterCall->execute( $object2 );
     }
 }
 
-
-
-class PhockitoMockParameterCall{
+class PhockitoMockParameterCall {
 
     const CLASS_NAME = __CLASS__;
 
 
     /**
      * @param $value
+     *
      * @return mixed
      */
-    public function execute( $value ){
+    public function execute( $value ) {
 
+    }
+}
+
+class PhockitoClassWithCustomSerializeAction {
+    private $property = 'a';
+
+
+    function __sleep() {
+        return array( 'property' );
     }
 }
 
