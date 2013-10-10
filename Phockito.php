@@ -642,7 +642,8 @@ class Phockito_VerifyBuilder {
 	function __call($called, $args) {
 		$count = 0;
 
-		foreach (Phockito::$_call_list as $call) {
+        $call_list = Phockito::$_call_list;
+        foreach ( $call_list as $call) {
 			if ($call['instance'] == $this->instance && $call['method'] == $called && Phockito::_arguments_match($this->class, $called, $args, $call['args'])) {
 				$count++;
 			}
@@ -661,7 +662,9 @@ class Phockito_VerifyBuilder {
 		
 		$message .= "Calls:\n";
 
-		foreach (Phockito::$_call_list as $call) {
+        $call_list1 = Phockito::$_call_list;
+        foreach (
+            $call_list1 as $call) {
 			if ($call['instance'] == $this->instance && $call['method'] == $called) {
 				$message .= var_export($call['args'], true);
 			}
