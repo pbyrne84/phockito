@@ -130,7 +130,7 @@ class Phockito {
 				if (serialize($u) != serialize($v)) return false;
 			}
 		}
-		
+
 		return true;
 	}
 
